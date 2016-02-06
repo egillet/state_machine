@@ -29,7 +29,7 @@ class BaseAdaptor(object):
 
                 def is_method_builder(member):
                     def f(self):
-                        return self.aasm_state == str(member)
+                        return getattr(self, self.__class__.state_field_name) == str(member)
 
                     return property(f)
 
@@ -76,7 +76,7 @@ class BaseAdaptor(object):
                 event_method_dict[member] = event_meta_method(member, value)
         return event_method_dict
 
-    def modifed_class(self, original_class, callback_cache):
+    def modifed_class(self, original_class, callback_cache, state_field_name):
 
         class_name = original_class.__name__
         class_dict = dict()
@@ -85,7 +85,7 @@ class BaseAdaptor(object):
 
         def current_state_method():
             def f(self):
-                return self.aasm_state
+                return getattr(self, self.__class__.state_field_name)
             return property(f)
 
         class_dict['current_state'] = current_state_method()
@@ -93,8 +93,9 @@ class BaseAdaptor(object):
         class_dict.update(original_class.__dict__)
 
         # Get states
+        class_dict['state_field_name'] = state_field_name
         state_method_dict, initial_state = self.process_states(original_class)
-        class_dict.update(self.extra_class_members(initial_state))
+        class_dict.update(self.extra_class_members(original_class, state_field_name, initial_state))
         class_dict.update(state_method_dict)
 
         # Get events
@@ -104,7 +105,7 @@ class BaseAdaptor(object):
         clazz = type(class_name, original_class.__bases__, class_dict)
         return clazz
 
-    def extra_class_members(self, initial_state):
+    def extra_class_members(self, original_class, state_field_name, initial_state):
         raise NotImplementedError
 
     def update(self, document, state_name):

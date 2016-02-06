@@ -28,7 +28,7 @@ Basic Usage
 .. code:: python
 
 
-    @acts_as_state_machine
+    @acts_as_state_machine()
     class Person():
         name = 'Billy'
 
@@ -90,6 +90,14 @@ Blocks invalid state transitions
 An *InvalidStateTransition Exception* will be thrown if you try to move
 into an invalid state.
 
+Name of the state field
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The default name of the state field is "aasm_state". If you want to chane it, you just have to give it as  an argument to the acts_as_state_machine decorator:
+    @acts_as_state_machine('my_field_name')
+    class Person():
+		...
+
 ORM support
 -----------
 
@@ -106,7 +114,7 @@ datastore.
 
 .. code:: python
 
-        @acts_as_state_machine
+        @acts_as_state_machine()
         class Person(mongoengine.Document):
             name = mongoengine.StringField(default='Billy')
 
@@ -162,7 +170,7 @@ All you need to do is have sqlalchemy manage your object. For example:
 
         from sqlalchemy.ext.declarative import declarative_base
         Base = declarative_base()
-        @acts_as_state_machine
+        @acts_as_state_machine()
         class Puppy(Base):
            ...
 

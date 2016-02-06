@@ -23,11 +23,12 @@ class MongoAdaptor(BaseAdaptor):
         return results
 
 
-    def extra_class_members(self, initial_state):
-        return {'aasm_state': mongoengine.StringField(default=initial_state.name)}
+
+    def extra_class_members(self, original_class, state_field_name, initial_state):
+        return {state_field_name: mongoengine.StringField(default=initial_state.name), 'id': original_class.pk}
 
     def update(self, document, state_name):
-        document.aasm_state = state_name
+        setattr(document, document.__class__.state_field_name, state_name)
 
 
 def get_mongo_adaptor(original_class):

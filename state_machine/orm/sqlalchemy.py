@@ -13,35 +13,36 @@ from state_machine.orm.base import BaseAdaptor
 
 
 class SqlAlchemyAdaptor(BaseAdaptor):
-    def extra_class_members(self, initial_state):
-        return {'aasm_state': sqlalchemy.Column(sqlalchemy.String)}
+    def extra_class_members(self, original_class, state_field_name, initial_state):
+        return {state_field_name: sqlalchemy.Column(sqlalchemy.String)}
 
     def update(self, document, state_name):
-        document.aasm_state = state_name
+        setattr(document, document.__class__.state_field_name, state_name)
 
-    def modifed_class(self, original_class, callback_cache):
+    def modifed_class(self, original_class, callback_cache, state_field_name):
         class_dict = dict()
 
         class_dict['callback_cache'] = callback_cache
 
         def current_state_method():
             def f(self):
-                return self.aasm_state
+                return getattr(self, self.__class__.state_field_name)
 
             return property(f)
 
         class_dict['current_state'] = current_state_method()
 
         # Get states
+        class_dict['state_field_name'] = state_field_name
         state_method_dict, initial_state = self.process_states(original_class)
-        class_dict.update(self.extra_class_members(initial_state))
+        class_dict.update(self.extra_class_members(original_class, state_field_name, initial_state))
         class_dict.update(state_method_dict)
 
         orig_init = original_class.__init__
 
         def new_init(self, *args, **kwargs):
             orig_init(self, *args, **kwargs)
-            self.aasm_state = initial_state.name
+            setattr(self, self.__class__.state_field_name, initial_state.name)
 
         class_dict['__init__'] = new_init
 

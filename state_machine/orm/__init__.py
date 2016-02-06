@@ -19,8 +19,9 @@ def get_adaptor(original_class):
 
 
 class NullAdaptor(BaseAdaptor):
-    def extra_class_members(self, initial_state):
-        return {"aasm_state": initial_state.name}
+    def extra_class_members(self, original_class, state_field_name, initial_state):
+        return {state_field_name: initial_state.name}
 
     def update(self, document, state_name):
-        document.aasm_state = state_name
+        setattr(document, document.__class__.state_field_name, state_name)
+        
