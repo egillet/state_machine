@@ -44,7 +44,7 @@ class BaseAdaptor(object):
             if isinstance(value, Event):
                 # Create event methods
                 def event_meta_method(event_name, event_description):
-                    def f(self):
+                    def f(self, *args, **kwargs):
                         #assert current state
                         if self.current_state not in event_description.from_states:
                             raise InvalidStateTransition
@@ -53,9 +53,8 @@ class BaseAdaptor(object):
                         if self.__class__.callback_cache and \
                                 event_name in self.__class__.callback_cache[_adaptor.original_class.__name__]['before']:
                             for callback in self.__class__.callback_cache[_adaptor.original_class.__name__]['before'][event_name]:
-                                result = callback(self)
+                                result = callback(self, *args, **kwargs)
                                 if result is False:
-                                    print("One of the 'before' callbacks returned false, breaking")
                                     failed = True
                                     break
                         #change state
@@ -66,7 +65,7 @@ class BaseAdaptor(object):
                             if self.__class__.callback_cache and \
                                     event_name in self.__class__.callback_cache[_adaptor.original_class.__name__]['after']:
                                 for callback in self.__class__.callback_cache[_adaptor.original_class.__name__]['after'][event_name]:
-                                    callback(self)
+                                    callback(self, *args, **kwargs)
 
                     return f
                     

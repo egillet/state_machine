@@ -41,20 +41,20 @@ Basic Usage
         sleep = Event(from_states=(running, cleaning), to_state=sleeping)
 
         @before('sleep')
-        def do_one_thing(self):
+        def do_one_thing(self, param):
             print "{} is sleepy".format(self.name)
 
         @before('sleep')
-        def do_another_thing(self):
-            print "{} is REALLY sleepy".format(self.name)
+        def do_another_thing(self, param):
+            print "{} is REALLY sleepy and will sleep {}".format(self.name, param)
 
         @after('sleep')
-        def snore(self):
+        def snore(self, param):
             print "Zzzzzzzzzzzz"
 
         @after('sleep')
-        def big_snore(self):
-            print "Zzzzzzzzzzzzzzzzzzzzzz"
+        def big_snore(self, param):
+            print "Zzzzzzzzzzzzzzzzzzzzzz (%r)"%param
 
     person = Person()
     print person.current_state == Person.sleeping       # True
@@ -62,12 +62,12 @@ Basic Usage
     print person.is_running                             # False
     person.run()
     print person.is_running                             # True
-    person.sleep()
+    person.sleep('a long time')
 
     # Billy is sleepy
-    # Billy is REALLY sleepy
+    # Billy is REALLY sleepy and will sleep a long time
     # Zzzzzzzzzzzz
-    # Zzzzzzzzzzzzzzzzzzzzzz
+    # Zzzzzzzzzzzzzzzzzzzzzz (a long time)
 
     print person.is_sleeping                            # True
 
@@ -79,6 +79,7 @@ Before / After Callback Decorators
 
 You can add callback hooks that get executed before or after an event
 (see example above).
+If a event is called with parameters, all the before/after callback must be defined with a compatible signature
 
 *Important:* if the *before* event causes an exception or returns
 ``False``, the state will not change (transition is blocked) and the
@@ -101,84 +102,14 @@ The default name of the state field is "aasm_state". If you want to chane it, yo
 ORM support
 -----------
 
-We have basic support for `mongoengine`_, and `sqlalchemy`_.
+No more support for ORM, just plain old object. 
+If the state field preexists, it's reused and you must give the default value at the initialization else it's created and initialized to the name of the default State.
 
-Mongoengine
-~~~~~~~~~~~
-
-Just have your object inherit from ``mongoengine.Document`` and
-state\_machine will add a StringField for state.
-
-*Note:* You must explicitly call #save to persist the document to the
-datastore.
-
-.. code:: python
-
-        @acts_as_state_machine()
-        class Person(mongoengine.Document):
-            name = mongoengine.StringField(default='Billy')
-
-            sleeping = State(initial=True)
-            running = State()
-            cleaning = State()
-
-            run = Event(from_states=sleeping, to_state=running)
-            cleanup = Event(from_states=running, to_state=cleaning)
-            sleep = Event(from_states=(running, cleaning), to_state=sleeping)
-
-            @before('sleep')
-            def do_one_thing(self):
-                print "{} is sleepy".format(self.name)
-
-            @before('sleep')
-            def do_another_thing(self):
-                print "{} is REALLY sleepy".format(self.name)
-
-            @after('sleep')
-            def snore(self):
-                print "Zzzzzzzzzzzz"
-
-            @after('sleep')
-            def snore(self):
-                print "Zzzzzzzzzzzzzzzzzzzzzz"
-
-
-        person = Person()
-        person.save()
-        eq_(person.current_state, Person.sleeping)
-        assert person.is_sleeping
-        assert not person.is_running
-        person.run()
-        assert person.is_running
-        person.sleep()
-        assert person.is_sleeping
-        person.run()
-        person.save()
-
-        person2 = Person.objects(id=person.id).first()
-        assert person2.is_running
-
-.. _mongoengine: http://mongoengine.org/
-.. _sqlalchemy: http://www.sqlalchemy.org/
-
-Sqlalchemy
-~~~~~~~~~~
-
-All you need to do is have sqlalchemy manage your object. For example:
-
-.. code:: python
-
-        from sqlalchemy.ext.declarative import declarative_base
-        Base = declarative_base()
-        @acts_as_state_machine()
-        class Puppy(Base):
-           ...
 
 Issues / Roadmap:
 -----------------
 
 -  Allow multiple state\_machines per object
--  Be able to configure the state field
 
 Questions / Issues
 ------------------

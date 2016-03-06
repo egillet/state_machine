@@ -41,20 +41,20 @@ Basic Usage
         sleep = Event(from_states=(running, cleaning), to_state=sleeping)
 
         @before('sleep')
-        def do_one_thing(self):
+        def do_one_thing(self, param):
             print "{} is sleepy".format(self.name)
 
         @before('sleep')
-        def do_another_thing(self):
-            print "{} is REALLY sleepy".format(self.name)
+        def do_another_thing(self, param):
+            print "{} is REALLY sleepy and will sleep {}".format(self.name, param)
 
         @after('sleep')
-        def snore(self):
+        def snore(self, param):
             print "Zzzzzzzzzzzz"
 
         @after('sleep')
-        def big_snore(self):
-            print "Zzzzzzzzzzzzzzzzzzzzzz"
+        def big_snore(self, param):
+            print "Zzzzzzzzzzzzzzzzzzzzzz (%r)"%param
 
     person = Person()
     print person.current_state == Person.sleeping       # True
@@ -62,12 +62,12 @@ Basic Usage
     print person.is_running                             # False
     person.run()
     print person.is_running                             # True
-    person.sleep()
+    person.sleep('a long time')
 
     # Billy is sleepy
-    # Billy is REALLY sleepy
+    # Billy is REALLY sleepy and will sleep a long time
     # Zzzzzzzzzzzz
-    # Zzzzzzzzzzzzzzzzzzzzzz
+    # Zzzzzzzzzzzzzzzzzzzzzz (a long time)
 
     print person.is_sleeping                            # True
 
@@ -79,6 +79,7 @@ Before / After Callback Decorators
 
 You can add callback hooks that get executed before or after an event
 (see example above).
+If a event is called with parameters, all the before/after callback must be defined with a compatible signature
 
 *Important:* if the *before* event causes an exception or returns
 ``False``, the state will not change (transition is blocked) and the
