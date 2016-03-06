@@ -14,9 +14,9 @@ def get_packages():
 required_modules = []
 
 setup(name='state_machine',
-      version='0.2.9',
+      version='0.3.0',
       description='Python State Machines for Humans',
-      url='http://github.com/jtushman/state_machine',
+      url='https://github.com/egillet/state_machine',
       author='Jonathan Tushman',
       author_email='jonathan@zefr.com',
       install_requires=required_modules,

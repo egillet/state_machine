@@ -1,7 +1,7 @@
 import inspect
 
 from state_machine.models import Event, State, InvalidStateTransition
-from state_machine.orm import get_adaptor
+from state_machine.orm.base import BaseAdaptor
 
 _temp_callback_cache = None
 
@@ -43,9 +43,9 @@ def after(after_what):
 
 def acts_as_state_machine(state_field_name='aasm_state'):
     def f(original_class):
-        adaptor = get_adaptor(original_class)
+        adaptor = BaseAdaptor(original_class)
         global _temp_callback_cache
-        modified_class = adaptor.modifed_class(original_class, _temp_callback_cache, state_field_name)
+        adaptor.modifed_class(original_class, _temp_callback_cache, state_field_name)
         _temp_callback_cache = None
-        return modified_class
+        return original_class
     return f
