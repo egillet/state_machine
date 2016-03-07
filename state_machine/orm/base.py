@@ -58,7 +58,9 @@ class BaseAdaptor(object):
                                     failed = True
                                     break
                         #change state
-                        if not failed:
+                        if failed:
+                            return False
+                        else:
                             setattr(self, self.__class__.state_field_name, event_description.to_state.name)
                           
                             #fire after_change
@@ -66,7 +68,7 @@ class BaseAdaptor(object):
                                     event_name in self.__class__.callback_cache[_adaptor.original_class.__name__]['after']:
                                 for callback in self.__class__.callback_cache[_adaptor.original_class.__name__]['after'][event_name]:
                                     callback(self, *args, **kwargs)
-
+                            return True
                     return f
                     
                 setattr(original_class, member, event_meta_method(member, value))
